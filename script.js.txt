@@ -1,0 +1,373 @@
+JS
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Set current year
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+    
+    // Initialize Swiper
+    const ownersSwiper = new Swiper('.owners-swiper', {
+        loop: true,
+        autoplay: {
+            delay: 5000,
+            disableOnInteraction: false,
+        },
+        pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+        },
+        navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+        },
+        effect: 'coverflow',
+        grabCursor: true,
+        centeredSlides: true,
+        slidesPerView: 'auto',
+        coverflowEffect: {
+            rotate: 0,
+            stretch: 0,
+            depth: 100,
+            modifier: 2,
+            slideShadows: true,
+        },
+    });
+    
+    // Initialize Lord Skills Chart
+    const lordSkillsCtx = document.getElementById('lordSkills').getContext('2d');
+    const lordSkillsChart = new Chart(lordSkillsCtx, {
+        type: 'radar',
+        data: {
+            labels: ['Strategy', 'Combat', 'Leadership', 'Tactics', 'Defense', 'Offense'],
+            datasets: [{
+                label: 'Lord Malek Skills',
+                data: [98, 95, 99, 97, 93, 96],
+                backgroundColor: 'rgba(230, 57, 70, 0.2)',
+                borderColor: 'rgba(230, 57, 70, 1)',
+                borderWidth: 2,
+                pointBackgroundColor: 'rgba(230, 57, 70, 1)',
+                pointBorderColor: '#fff',
+                pointHoverRadius: 5,
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgba(230, 57, 70, 1)',
+            }]
+        },
+        options: {
+            scales: {
+                r: {
+                    angleLines: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    pointLabels: {
+                        color: '#fff'
+                    },
+                    ticks: {
+                        backdropColor: 'rgba(0, 0, 0, 0)',
+                        color: 'rgba(255, 255, 255, 0.5)',
+                        showLabelBackdrop: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#fff'
+                    }
+                }
+            },
+            elements: {
+                line: {
+                    tension: 0.1
+                }
+            }
+        }
+    });
+    
+    // Generate sample members
+    const membersGrid = document.querySelector('.members-grid');
+    const sampleMembers = [
+        { name: 'DragonSlayer', rank: 'Elite Warrior', level: 92, power: 'A+', online: true },
+        { name: 'FireStorm', rank: 'Flame Caster', level: 89, power: 'A', online: true },
+        { name: 'ShadowScale', rank: 'Stealth Assassin', level: 90, power: 'A', online: false },
+        { name: 'IronClaw', rank: 'Tank Specialist', level: 94, power: 'A+', online: true },
+        { name: 'SkyWing', rank: 'Air Commander', level: 88, power: 'A-', online: false },
+        { name: 'NightFury', rank: 'Recon Expert', level: 91, power: 'A', online: true },
+        { name: 'BlazeHeart', rank: 'Medic', level: 87, power: 'B+', online: true },
+        { name: 'ThunderJaw', rank: 'Heavy Artillery', level: 93, power: 'A+', online: false },
+    ];
+    
+    function generateMemberCard(member) {
+        const initials = member.name.split(' ').map(n => n[0]).join('').substring(0, 2);
+        return `
+            <div class="member-card">
+                <div class="member-banner"></div>
+                <div class="member-avatar">${initials}</div>
+                <div class="member-info">
+                    <h3 class="member-name">${member.name}</h3>
+                    <p class="member-rank">${member.rank}</p>
+                    <div class="member-stats">
+                        <div class="member-stat">
+                            <span>Level</span>
+                            <strong>${member.level}</strong>
+                        </div>
+                        <div class="member-stat">
+                            <span>Power</span>
+                            <strong>${member.power}</strong>
+                        </div>
+                    </div>
+                </div>
+                ${member.online ? '<div class="member-status"></div>' : ''}
+            </div>
+        `;
+    }
+    
+    membersGrid.innerHTML = sampleMembers.map(generateMemberCard).join('');
+    
+    // View toggle functionality
+    const viewButtons = document.querySelectorAll('.view-btn');
+    viewButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            viewButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            if (this.dataset.view === 'grid') {
+                membersGrid.classList.remove('list-view');
+            } else {
+                membersGrid.classList.add('list-view');
+            }
+        });
+    });
+    
+    // Back to top button
+    const backToTopBtn = document.getElementById('backToTop');
+    window.addEventListener('scroll', function() {
+        if (window.pageYOffset > 300) {
+            backToTopBtn.style.opacity = '1';
+            backToTopBtn.style.visibility = 'visible';
+        } else {
+            backToTopBtn.style.opacity = '0';
+            backToTopBtn.style.visibility = 'hidden';
+        }
+    });
+    
+    backToTopBtn.addEventListener('click', function() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+    
+    // Fire effect
+    const canvas = document.getElementById('fireCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    const particles = [];
+    const particleCount = 150;
+    
+    function Particle() {
+        this.x = Math.random() * canvas.width;
+        this.y = canvas.height + Math.random() * 100;
+        this.size = Math.random() * 15 + 5;
+        this.speedY = Math.random() * -3 - 1;
+        this.speedX = Math.random() * 3 - 1.5;
+        this.color = `hsl(${Math.random() * 20 + 10}, 100%, ${Math.random() * 30 + 50}%)`;
+        this.alpha = Math.random() * 0.5 + 0.5;
+        this.decay = Math.random() * 0.03 + 0.02;
+    }
+    
+    for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
+    }
+    
+    function animateFire() {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = 'rgba(13, 27, 42, 0.2)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.globalCompositeOperation = 'lighter';
+        
+        for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+            
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = p.alpha;
+            ctx.fill();
+            
+            p.y += p.speedY;
+            p.x += p.speedX;
+            p.alpha -= p.decay;
+            
+            if (p.alpha <= 0 || p.y < 0) {
+                particles[i] = new Particle();
+            }
+        }
+        
+        requestAnimationFrame(animateFire);
+    }
+    
+    animateFire();
+    
+    window.addEventListener('resize', function() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    });
+    
+    // Initialize particles.js
+    particlesJS('particles-js', {
+        "particles": {
+            "number": {
+                "value": 80,
+                "density": {
+                    "enable": true,
+                    "value_area": 800
+                }
+            },
+            "color": {
+                "value": "#e63946"
+            },
+            "shape": {
+                "type": "circle",
+                "stroke": {
+                    "width": 0,
+                    "color": "#000000"
+                },
+                "polygon": {
+                    "nb_sides": 5
+                }
+            },
+            "opacity": {
+                "value": 0.5,
+                "random": true,
+                "anim": {
+                    "enable": true,
+                    "speed": 1,
+                    "opacity_min": 0.1,
+                    "sync": false
+                }
+            },
+            "size": {
+                "value": 3,
+                "random": true,
+                "anim": {
+                    "enable": true,
+                    "speed": 2,
+                    "size_min": 0.1,
+                    "sync": false
+                }
+            },
+            "line_linked": {
+                "enable": true,
+                "distance": 150,
+                "color": "#e63946",
+                "opacity": 0.4,
+                "width": 1
+            },
+            "move": {
+                "enable": true,
+                "speed": 2,
+                "direction": "none",
+                "random": true,
+                "straight": false,
+                "out_mode": "out",
+                "bounce": false,
+                "attract": {
+                    "enable": true,
+                    "rotateX": 600,
+                    "rotateY": 1200
+                }
+            }
+        },
+        "interactivity": {
+            "detect_on": "canvas",
+            "events": {
+                "onhover": {
+                    "enable": true,
+                    "mode": "grab"
+                },
+                "onclick": {
+                    "enable": true,
+                    "mode": "push"
+                },
+                "resize": true
+            },
+            "modes": {
+                "grab": {
+                    "distance": 140,
+                    "line_linked": {
+                        "opacity": 1
+                    }
+                },
+                "bubble": {
+                    "distance": 400,
+                    "size": 40,
+                    "duration": 2,
+                    "opacity": 8,
+                    "speed": 3
+                },
+                "repulse": {
+                    "distance": 200,
+                    "duration": 0.4
+                },
+                "push": {
+                    "particles_nb": 4
+                },
+                "remove": {
+                    "particles_nb": 2
+                }
+            }
+        },
+        "retina_detect": true
+    });
+    
+    // Smooth scrolling for navigation
+    document.querySelectorAll('.nav-item a').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 100,
+                    behavior: 'smooth'
+                });
+                
+                // Update active nav item
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                this.parentElement.classList.add('active');
+            }
+        });
+    });
+    
+    // Load more members functionality
+    const loadMoreBtn = document.querySelector('.load-btn');
+    loadMoreBtn.addEventListener('click', function() {
+        // Simulate loading
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+        
+        setTimeout(() => {
+            // Add more sample members
+            const moreMembers = [
+                { name: 'FrostBite', rank: 'Ice Mage', level: 86, power: 'B+', online: false },
+                { name: 'StoneHeart', rank: 'Defense Expert', level: 90, power: 'A', online: true },
+                { name: 'WindRider', rank: 'Scout', level: 84, power: 'B', online: false },
+                { name: 'BloodFang', rank: 'Berserker', level: 93, power: 'A+', online: true },
+            ];
+            
+            moreMembers.forEach(member => {
+                membersGrid.insertAdjacentHTML('beforeend', generateMemberCard(member));
+            });
+            
+            this.innerHTML = '<span>Load More</span><i class="fas fa-chevron-down"></i>';
+        }, 1000);
+    });
+});
